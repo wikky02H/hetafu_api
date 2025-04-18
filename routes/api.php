@@ -48,6 +48,10 @@ Route::get('orders/details/{id}', [OrderController::class, 'getOrderDetails']);
 //products
 Route::post('products/list', [ProductController::class, 'productList']);
 
+//customers
+Route::post('customer/list', [UserController::class, 'customerList']);
+Route::get('customer/count', [UserController::class, 'customerCount']);
+
 #region Venkatesh
 Route::get('product/details/{id}', [ProductController::class, 'getProductDetailsById']);
 #endregion Venkatesh

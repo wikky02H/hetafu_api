@@ -3,6 +3,7 @@
 namespace App\Http\BusinessLogics;
 
 use App\Models\Session;
+use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -62,4 +63,61 @@ class UserLogic
             return false;
         }
     }
+    public static function getCustomerList($payload)
+    {
+        $pageLimit = $payload['pageLimit'];
+        $page = $payload['currentPage'];
+        $sortBy = $payload['sortBy'];
+
+        try {
+            $query = User::select(
+                    'users.id',
+                    'users.name',
+                    'users.email',
+                    'users.created_at as joinDate',
+                    DB::raw('COUNT(orders.id) as totalOrders'),
+                    DB::raw('SUM(orders.total_amount) as totalAmount')
+                )
+                ->join('orders', 'orders.user_id', '=', 'users.id')
+                ->groupBy('users.id', 'users.name', 'users.email', 'users.created_at')
+                ->whereNull('users.deleted_at')
+                ->orderBy('users.created_at', strtolower($sortBy));
+
+            return $query->paginate($pageLimit, ['*'], 'page', $page);
+        } catch (Exception $e) {
+            Log::error('Error in getCustomerList', ['exception' => $e]);
+            return null;
+        }
+    }
+    public static function customerCount()
+    {
+        try {
+            $query = DB::selectOne("
+                SELECT
+                    COUNT(DISTINCT u.id) AS totalCustomer,
+                    COUNT(DISTINCT CASE
+                        WHEN MONTH(IFNULL(u.updated_at, u.created_at)) = MONTH(CURDATE())
+                        AND YEAR(IFNULL(u.updated_at, u.created_at)) = YEAR(CURDATE())
+                        THEN u.id
+                    END) AS activeThisMonth,
+                    COUNT(DISTINCT CASE
+                        WHEN MONTH(u.created_at) = MONTH(CURDATE())
+                        AND YEAR(u.created_at) = YEAR(CURDATE())
+                        THEN u.id
+                    END) AS newThisMonth
+                FROM users u
+                INNER JOIN orders o ON o.user_id = u.id
+                WHERE u.deleted_at IS NULL
+            ");
+            return [
+                'totalCustomer' => (int)$query->totalCustomer,
+                'activeThisMonth' => (int)$query->activeThisMonth,
+                'newThisMonth' => (int)$query->newThisMonth
+            ];
+        } catch (Exception $e) {
+            Log::info('Error customerCount', [$e]);
+            return CommonLogic::jsonResponse("Internal server error", 500, null);
+        }
+    }
+    // activeThisMonth unique users id i need to count
 }
