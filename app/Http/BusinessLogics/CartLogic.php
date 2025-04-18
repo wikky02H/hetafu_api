@@ -4,6 +4,9 @@ namespace App\Http\BusinessLogics;
 
 use App\Models\Cart;
 use App\Models\CartItem;
+use Exception;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CartLogic
 {
@@ -44,55 +47,60 @@ class CartLogic
         $message = "";
         $error = "";
         $items = array();
-        if (!$productId) {
-            $success = false;
-            $error = "Product ID is required";
+        try {
+            if (!$productId) {
+                $success = false;
+                $error = "Product ID is required";
+                return [
+                    "success" => $success,
+                    "error" => $error,
+                    "message" => $message,
+                    "items" => $items,
+                ];
+            }
+
+            $isCartItemExists = CartItem::select(
+                "id",
+                "cart_id as cartId",
+                "product_id as productId",
+                "quantity"
+            )
+                ->where("cart_id", $cart->id)
+                ->where("product_id", $productId)
+                ->first();
+
+            if ($isCartItemExists) {
+                // Update quantity if item exists
+                CartItem::where("id", $isCartItemExists->id)
+                    ->update([
+                        "quantity" => (int)$isCartItemExists->quantity + $quantity,
+                        "updated_at" => DBLogic::currentDateTime(),
+                    ]);
+            } else {
+                // Create new cart item if it doesn't exist
+                CartItem::create([
+                    "cart_id" => $cart->id,
+                    "product_id" => $productId,
+                    "quantity" => $quantity,
+                    "created_at" => DBLogic::currentDateTime(),
+                ]);
+            }
+
+            // Fetch updated cart items
+            $items = self::getCartItems($cart);
+            $success = true;
+            $message = "Item added to cart";
+
             return [
                 "success" => $success,
-                "error" => $error,
                 "message" => $message,
+                "error" => $error,
                 "items" => $items,
             ];
+        } catch (Exception $e) {
+            Log::info('Error addToCart', [$e]);
+            return false;
         }
-
-        $isCartItemExists = CartItem::select(
-            "id",
-            "cart_id as cartId",
-            "product_id as productId",
-            "quantity"
-        )
-            ->where("cart_id", $cart->id)
-            ->where("product_id", $productId)
-            ->first();
-
-        if ($isCartItemExists) {
-            // Update quantity if item exists
-            CartItem::where("id", $isCartItemExists->id)
-                ->update([
-                    "quantity" => (int)$isCartItemExists->quantity + $quantity,
-                    "updated_at" => DBLogic::currentDateTime(),
-                ]);
-        } else {
-            // Create new cart item if it doesn't exist
-            CartItem::create([
-                "cart_id" => $cart->id,
-                "product_id" => $productId,
-                "quantity" => $quantity,
-                "created_at" => DBLogic::currentDateTime(),
-            ]);
-        }
-
-        // Fetch updated cart items
-        $items = self::getCartItems($cart);
-        $success = true;
-        $message = "Item added to cart";
-
-        return [
-            "success" => $success,
-            "message" => $message,
-            "error" => $error,
-            "items" => $items,
-        ];
     }
 
     public static function removeFromCart($cart, $productId)
@@ -159,10 +167,9 @@ class CartLogic
             "items" => $items,
         ];
     }
-
     public static function getCartItems($cart)
     {
-        $cartItems = CartItem::innerJoin("products", "products.id", "=", "cart_items.product_id")
+        $cartItems = CartItem::join("products", "products.id", "=", "cart_items.product_id")
             ->select(
                 "cart_items.id as id",
                 "cart_items.product_id as productId",
@@ -172,15 +179,14 @@ class CartLogic
                 "products.stock as stock",
                 "products.image_url as imageUrl",
             )
-            ->where("cartId", $cart->id)
+            ->where("cart_id", $cart->id)
             ->get();
 
         return $cartItems;
     }
-
     public static function clearCartItems($cart)
     {
-        $cartItems = CartItem::where("cartId", $cart->id)
+        $cartItems = CartItem::where("cart_id", $cart->id)
             ->update([
                 "quantity" => 0,
                 "deleted_at" => DBLogic::currentDateTime(),

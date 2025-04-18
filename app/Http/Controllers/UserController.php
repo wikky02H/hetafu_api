@@ -148,19 +148,17 @@ class UserController extends Controller
                 'expires_at'  => $generateToken['expires'],
                 'created_at'  => now(),
             ]);
-            return CommonLogic::jsonResponse("OTP verified successfully", 200, null);
+            return CommonLogic::jsonResponse("OTP verified successfully", 200, [
+                "token" => $generateToken['token'],
+                "expiresAt" => $generateToken['expires'],
+            ]);
         } catch (Exception $e) {
             Log::info('Error verifyOtp', [$e]);
             return CommonLogic::jsonResponse("Internal server error", 500, null);
         }
     }
-
     public function getUserSessionDetails(Request $request)
     {
-        $validator = CommonValidation::verifyOtp($request->all());
-        if ($validator->fails()) {
-            return CommonLogic::jsonResponse("Validation error", 400, $validator->errors(), true);
-        }
         try {
             $authHeader = $request->header('Authorization');
             if ($authHeader) {
@@ -176,6 +174,22 @@ class UserController extends Controller
             }
         } catch (Exception $e) {
             Log::info('Error getUserSessionDetails', [$e]);
+            return CommonLogic::jsonResponse("Internal server error", 500, null);
+        }
+    }
+
+    public function userLogout(Request $request)
+    {
+        $sessionId = $request->jwtSessionId;
+        try {
+            $isLoggedOut  = UserLogic::logoutUserByToken($sessionId);
+            return CommonLogic::jsonResponse(
+                $isLoggedOut ? "User logged out successfully" : "Failed to log out user",
+                $isLoggedOut ? 200 : 500,
+                null
+            );
+        } catch (Exception $e) {
+            Log::info('Error userLogout', [$e]);
             return CommonLogic::jsonResponse("Internal server error", 500, null);
         }
     }

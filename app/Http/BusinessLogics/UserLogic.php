@@ -52,4 +52,14 @@ class UserLogic
             return CommonLogic::jsonResponse("Internal server error", 500, null);
         }
     }
+    public static function logoutUserByToken(string $sessionId): bool
+    {
+        try {
+            $deleted = Session::where('id', $sessionId)->delete();
+            return $deleted > 0;
+        } catch (Exception $e) {
+            Log::info('Error in logoutUserByToken', ['exception' => $e]);
+            return false;
+        }
+    }
 }

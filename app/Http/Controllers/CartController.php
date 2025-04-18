@@ -4,9 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\BusinessLogics\CartLogic;
 use App\Http\BusinessLogics\CommonLogic;
-use App\Http\Validation\CommonValidation;
-use App\Models\Otp;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Exception;
@@ -21,8 +18,8 @@ class CartController extends Controller
         // }
         try {
             $cart = CartLogic::getOrCreateCart($request->jwtUserId, $request->jwtSessionId);
-            CartLogic::getCartItems($cart);
-            return CommonLogic::jsonResponse("Success", 200, null);
+            $cartItems = CartLogic::getCartItems($cart);
+            return CommonLogic::jsonResponse("Success", 200, $cartItems);
         } catch (Exception $e) {
             Log::info('Error getCartItems', [$e]);
             return CommonLogic::jsonResponse("Internal server error", 500, null);
@@ -38,6 +35,7 @@ class CartController extends Controller
         try {
             $cart = CartLogic::getOrCreateCart($request->jwtUserId, $request->jwtSessionId);
             $result = CartLogic::addToCart($cart, $request->productId, $request->quantity);
+            Log::info('result',[$result]);
             if (!$result["success"]) {
                 return CommonLogic::jsonResponse($result["error"], 400, $result["items"]);
             } else {

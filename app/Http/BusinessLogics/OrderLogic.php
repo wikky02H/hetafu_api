@@ -3,6 +3,7 @@
 namespace App\Http\BusinessLogics;
 
 use App\Models\Order;
+use App\Models\Product;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -71,47 +72,6 @@ class OrderLogic
             return CommonLogic::jsonResponse("Internal server error", 500, null);
         }
     }
-    // public static function getOrderDetailsById($id)
-    // {
-
-    //     try {
-    //         $result = Order::select(
-    //             'os.name as orderStatus,
-    //                       ca.id as categoryId,
-    //                       ca.name as categoryName,
-    //                       po.name as productName,
-    //                       po.description as productDescription,
-    //                       po.price as productPrice,
-    //                       po.stock as productStock,
-    //                       po.image_url as productImageUrl,
-
-    //                       oit.id as itemId,
-    //                       oit.quantity as itemQuantity,
-    //                       oit.price as itemPrice,
-    //                       oit.id as itemImage,
-    //                       oit.name as itemName,
-
-    //                       orders.order_number as orderNumber,
-    //                       orders.id as orderId,
-    //                       orders.billing_address as billingAddress,
-    //                       orders.shipping_address as shippingAddress,
-    //                       orders.total_amount as totalAmount
-    //                     '
-    //             )
-    //         ->leftJoin('order_statuses as os', 'os.id', '=', 'orders.order_status_id')
-    //         ->leftJoin('order_items as oit', 'oit.order_id', '=', 'orders.id')
-    //         ->leftJoin('products as po', 'oit.product_id', '=', 'oit.id')
-    //         ->leftJoin('categories as ca', 'ca.id', '=', 'po.category_id')
-    //         ->get();
-    //         $data = [
-
-    //         ];
-    //         return $data;
-    //     } catch (Exception $e) {
-    //         Log::info('Error getOrderCount', [$e]);
-    //         return CommonLogic::jsonResponse("Internal server error", 500, null);
-    //     }
-    // }
     public static function getOrderDetailsById($id)
     {
         try {

@@ -8,7 +8,8 @@ class DBLogic
 {
     public static function currentDateTime()
     {
-        return DB::raw("SELECT NOW() AS `dateTime`")[0]["dateTime"];
+        // return DB::raw("SELECT NOW() AS `dateTime`")[0]["dateTime"];
+        return DB::select("SELECT NOW() AS `dateTime`")[0]->dateTime;
     }
     public static function getMaxId($tableName)
     {
