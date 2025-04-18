@@ -71,14 +71,16 @@ class UserLogic
 
         try {
             $query = User::select(
-                    'users.id',
-                    'users.name',
-                    'users.email',
-                    'users.created_at as joinDate',
-                    DB::raw('COUNT(orders.id) as totalOrders'),
-                    DB::raw('SUM(orders.total_amount) as totalAmount')
-                )
-                ->join('orders', 'orders.user_id', '=', 'users.id')
+                'users.id',
+                'users.name',
+                'users.email',
+                'users.created_at as joinDate',
+                DB::raw("(SELECT COUNT(*) FROM ORDERS WHERE user_id = users.id) AS totalOrders"),
+                DB::raw("(SELECT SUM(total_amount) FROM ORDERS WHERE user_id = users.id) AS totalAmount"),
+                // DB::raw('COUNT(orders.id) as totalOrders'),
+                // DB::raw('SUM(orders.total_amount) as totalAmount')
+            )
+                // ->join('orders', 'orders.user_id', '=', 'users.id')
                 ->groupBy('users.id', 'users.name', 'users.email', 'users.created_at')
                 ->whereNull('users.deleted_at')
                 ->orderBy('users.created_at', strtolower($sortBy));

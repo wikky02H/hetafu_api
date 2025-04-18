@@ -37,6 +37,10 @@ Route::middleware('auth.jwt')->group(function () {
     Route::get('admin/order/count', [OrderController::class, 'getOrderCount']);
     Route::get('admin/orders/details/{orderNumber}', [OrderController::class, 'getOrderDetails']);
 
+    //customers
+    Route::post('admin/customer/list', [UserController::class, 'customerList']);
+    Route::get('admin/customer/count', [UserController::class, 'customerCount']);
+
     #region Venkatesh
     Route::get('cart/list', [CartController::class, 'getCartItems']);
     Route::post('cart/add', [CartController::class, 'addToCart']);
@@ -53,10 +57,6 @@ Route::post('otp/verify', [UserController::class, 'verifyOtp']);
 
 //products
 Route::post('products/list', [ProductController::class, 'productList']);
-
-//customers
-Route::post('customer/list', [UserController::class, 'customerList']);
-Route::get('customer/count', [UserController::class, 'customerCount']);
 
 #region Venkatesh
 Route::get('product/details/{id}', [ProductController::class, 'getProductDetailsById']);
