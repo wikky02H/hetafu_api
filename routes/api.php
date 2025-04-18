@@ -26,6 +26,17 @@ Route::middleware('auth.jwt')->group(function () {
     //User
     Route::post('user/logout', [UserController::class, 'userLogout']);
 
+    // Order
+    Route::get('order/address', [OrderController::class, 'userAddresses']);
+    Route::post('order/address/save', [OrderController::class, 'saveAddresses']);
+    Route::post('order/place', [OrderController::class, 'placeOrder']);
+    Route::post('order/payment/initialize', [OrderController::class, 'initializePayment']);
+    Route::post('order/payment/response', [OrderController::class, 'paymentResponse']);
+
+    Route::post('admin/order/list', [OrderController::class, 'getOrderList']);
+    Route::get('admin/order/count', [OrderController::class, 'getOrderCount']);
+    Route::get('admin/orders/details/{orderNumber}', [OrderController::class, 'getOrderDetails']);
+
     #region Venkatesh
     Route::get('cart/list', [CartController::class, 'getCartItems']);
     Route::post('cart/add', [CartController::class, 'addToCart']);
@@ -40,15 +51,9 @@ Route::post('otp/send', [UserController::class, 'sendOtp']);
 Route::post('otp/resend', [UserController::class, 'resendOtp']);
 Route::post('otp/verify', [UserController::class, 'verifyOtp']);
 
-//Orders
-Route::post('order/list', [OrderController::class, 'getOrderList']);
-Route::get('order/count', [OrderController::class, 'getOrderCount']);
-Route::get('orders/details/{id}', [OrderController::class, 'getOrderDetails']);
-
 //products
 Route::post('products/list', [ProductController::class, 'productList']);
 
 #region Venkatesh
 Route::get('product/details/{id}', [ProductController::class, 'getProductDetailsById']);
 #endregion Venkatesh
-
