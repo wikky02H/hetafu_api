@@ -31,7 +31,7 @@ Route::middleware('auth.jwt')->group(function () {
     Route::post('order/address/save', [OrderController::class, 'saveAddresses']);
     Route::post('order/place', [OrderController::class, 'placeOrder']);
     Route::post('order/payment/initialize', [OrderController::class, 'initializePayment']);
-    Route::post('order/payment/response', [OrderController::class, 'paymentResponse']);
+    Route::get('order/confirmation/email/{orderNumber}', [OrderController::class, 'confirmationEmail']);
 
     Route::post('admin/order/list', [OrderController::class, 'getOrderList']);
     Route::get('admin/order/count', [OrderController::class, 'getOrderCount']);
@@ -60,4 +60,6 @@ Route::post('products/list', [ProductController::class, 'productList']);
 
 #region Venkatesh
 Route::get('product/details/{id}', [ProductController::class, 'getProductDetailsById']);
+
+Route::post('order/payment/response', [OrderController::class, 'paymentResponse']);
 #endregion Venkatesh

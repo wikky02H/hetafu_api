@@ -146,17 +146,31 @@ class OrderController extends Controller
     {
         DB::beginTransaction();
         try {
-            Log::info("request", [$request]);
-            $encryptedData = OrderLogic::paymentResponse($request->encResp);
+            $redirectUrl = OrderLogic::paymentResponse($request->encResp);
             DB::commit();
             return CommonLogic::jsonResponse(
                 "Success",
                 200,
-                null,
+                ["redirectUrl" => $redirectUrl],
             );
         } catch (Exception $e) {
             Log::info('Error paymentResponse', [$e]);
             DB::rollBack();
+            return CommonLogic::jsonResponse("Internal server error", 500, null);
+        }
+    }
+
+    public function confirmationEmail($orderNumber)
+    {
+        try {
+            $result = OrderLogic::confirmationEmail($orderNumber);
+            return CommonLogic::jsonResponse(
+                "Success",
+                200,
+                $result,
+            );
+        } catch (Exception $e) {
+            Log::info('Error confirmationEmail', [$e]);
             return CommonLogic::jsonResponse("Internal server error", 500, null);
         }
     }

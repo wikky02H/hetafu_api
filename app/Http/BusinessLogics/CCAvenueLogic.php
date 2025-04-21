@@ -46,4 +46,15 @@ class CCAvenueLogic
         }
         return $binString;
     }
+
+    public static function parseCCAvenueResponse($decryptedString)
+    {
+        $result = array();
+        $explodedString = explode("&", $decryptedString);
+        foreach ($explodedString as $row) {
+            $explodedRow = explode("=", $row);
+            $result[$explodedRow[0]] = $explodedRow[1];
+        }
+        return $result;
+    }
 }

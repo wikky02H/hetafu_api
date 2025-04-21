@@ -41,7 +41,7 @@ class CommonLogic
             ])->withOptions([
                 'verify' => false,
             ])->post('https://api.resend.com/emails', [
-               'from' => 'customercare@hetafu.com',
+                'from' => 'customercare@hetafu.com',
                 'to' => [$email],
                 'subject' => 'Your OTP for Email Verification - HETAFU',
                 'html' => '
@@ -59,10 +59,37 @@ class CommonLogic
                     </body>
                 ',
             ]);
-            Log::info('response',[$response]);
+            Log::info('response', [$response]);
             return true;
         } catch (Exception $e) {
             Log::error("Email OTP sending failed: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public static function sendMobileOtp(int $mobile, string $otp): bool
+    {
+        try {
+            $response = Http::post('http://bulkpush.digimate/BULK_API/InstantBulkJsonPushV2', [
+                "keyword" => "HETAFU",
+                "timeStamp" => (string)time(),
+                "dataSet" => array([
+                    "MESSAGE" => "Hetafu sms test $otp",
+                    "OA" => "", // "AIRTEL"
+                    "MSISDN" => (string)$mobile,
+                    "CHANNEL" => "SMS",
+                    "CAMPAIGN_NAME" => "HETAFU_OTP_VERIFICATION",
+                    "CIRCLE_NAME" => "DLT_TEST",
+                    "USER_NAME" => "Hetafu",
+                    "DLT_TM_ID" => env("AIRTEL_TEMPLATE_ID"),
+                    "DLT_CT_ID" => "", // env("AIRTEL_TEMPLATE_ID"),
+                    "DLT_PE_ID" => env("AIRTEL_PE_ID"),
+                ]),
+            ]);
+            Log::info("response", [$response]);
+            return true;
+        } catch (Exception $e) {
+            Log::error("Mobile OTP sending failed: " . $e->getMessage());
             return false;
         }
     }

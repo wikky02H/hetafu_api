@@ -43,6 +43,11 @@ class UserController extends Controller
                     if (!$sendEmail) {
                         return CommonLogic::jsonResponse("Email OTP sending failed:", 500, null);
                     }
+                } else if ((string)$request->type === 'mobile') {
+                    $sendEmail = CommonLogic::sendMobileOtp($request->mobile, $otp);
+                    if (!$sendEmail) {
+                        return CommonLogic::jsonResponse("Mobile OTP sending failed:", 500, null);
+                    }
                 }
             }
             return CommonLogic::jsonResponse("OTP sent successfully", 200, null);
